@@ -1,6 +1,25 @@
 # E-Commerce E2E + API Contract Validation Platform
 
 > **Portfolio-Grade** integration of Playwright UI automation, Postman API contract testing, AJV schema validation, Faker-generated test data, and Allure reporting — all wired into a realistic e-commerce application.
+>
+> Based on the official Postman article: [Validate APIs During Your Playwright Tests with Postman](https://blog.postman.com/validate-apis-during-your-playwright-tests-with-postman/)
+
+---
+
+## 💡 Why This Exists
+
+Every Playwright run already produces the most realistic API traffic your product makes — real auth, real payloads, real ordering — and almost every team throws it away. The UI test passes, the API layer underneath could be silently broken, and nobody notices until production.
+
+This project wires Postman's `postman app test` into a Playwright suite so the captured network traffic does real work: validates contracts, surfaces drift, documents dependencies, and stops **UI-green-but-API-broken** bugs before they ship.
+
+### What this catches that UI tests alone don't
+
+| Problem | Description |
+|---------|-------------|
+| **False green tests** | UI looks correct, but the wrong endpoint was called or the payload is wrong |
+| **Silent degradation** | A backend error gets swallowed by a graceful UI fallback — test passes, UX is broken |
+| **Contract drift** | Schema, header, or content-type changes the UI tolerates but downstream consumers won't |
+| **Poor diagnosability** | A flaky failure becomes a 30-minute trace dive — structured captures turn it into a one-line answer |
 
 ---
 
@@ -90,7 +109,6 @@ PLAYWRIGHTPOSTMANINTEGRATION/
 ├── global-teardown.ts               # Stops Express after all tests complete
 ├── playwright.config.ts
 ├── postman.config.cjs
-├── .env.example
 └── package.json
 ```
 
@@ -109,65 +127,141 @@ PLAYWRIGHTPOSTMANINTEGRATION/
 
 ---
 
-### 1. Clone & Install
+### Step 1 — Link your repo to a Postman workspace
+
+Before running `postman app test`, your project must be linked to a Postman workspace through Postman's native Git integration.
+
+👉 Follow the official guide: [Connect your Git project to your workspace](https://learning.postman.com/docs/agent-mode/native-git#connect-your-git-project-to-your-workspace)
+
+Once linked, your `postman/` folder (collections + environments) syncs with your workspace automatically.
+
+---
+
+### Step 2 — Install the CLI and the Playwright plugin
 
 ```bash
-git clone <your-repo-url>
-cd PLAYWRIGHTPOSTMANINTEGRATION
+npm install -g postman-cli
+npm install -D postman-playwright
+```
 
+Or install all project dependencies at once:
+
+```bash
 npm install
 npx playwright install chromium
 ```
 
 ---
 
-### 2. Configure Environment
+### Step 3 — Wrap your Playwright test fixture
 
-```bash
-# Windows
-copy .env.example .env
+The `postman-playwright` plugin attaches network capture to your Playwright fixture. This is already done in `tests/postman.fixture.ts`:
 
-# macOS / Linux
-cp .env.example .env
+```typescript
+import { test as base, expect } from '@playwright/test';
+import { attachNetworkCapture } from 'postman-playwright';
+
+export { expect };
+export const test = attachNetworkCapture(base);
 ```
 
-Open `.env` and set your Postman API key (required only for `postman app test`):
-
-```env
-POSTMAN_API_KEY=your-postman-api-key-here
-```
-
-> Get your API key from: https://go.postman.co/settings/me/api-keys
+Every spec file imports `test` from this fixture instead of directly from `@playwright/test`, so all network traffic is automatically captured.
 
 ---
 
-### 3. Link Repo to Postman Workspace
+### Step 4 — Initialize your application
 
-Before running `postman app test`, link this project to your Postman workspace:
+In the root of your project, run:
 
 ```bash
 postman app init
 ```
 
-This is interactive — it asks which collections and environment to use, then writes `postman.config.cjs`. The file is already committed and pre-configured; you only need to run `init` if starting fresh.
+This is interactive. It asks which collections describe the APIs your app depends on, which environment to use, and which UI command to run. It writes the answers to `postman.config.cjs` — already committed and pre-configured in this project:
+
+```javascript
+module.exports = {
+  command: 'npx playwright test',
+  targets: {
+    default: {
+      environment: 'Local',
+      collections: ['Ecommerce E2E + API Contract Validation'],
+    },
+    staging: {
+      environment: 'Local',
+      collections: ['Ecommerce E2E + API Contract Validation'],
+    },
+  },
+  filters: {
+    urlPatterns: ['\\.css$', '\\.js$', '\\.png$', '^data:', /* ... */],
+  },
+};
+```
+
+> **Targets** are named runtime setups. The same repo can validate against `default`, `staging`, or `prod` without rewriting config — handy when you want different dependency surfaces in CI vs a developer laptop.
+
+You only need to re-run `postman app init` if starting a fresh clone without the committed config.
 
 ---
 
-### 4. Start the Backend (manual, optional)
+### Step 5 — Run it
 
-The backend starts and stops **automatically** during Playwright runs via `global-setup.ts` / `global-teardown.ts`. To start it manually for local exploration:
+#### Windows — Command Prompt
+
+```cmd
+set CI=true && postman app test --command "npx playwright test"
+```
+
+#### Windows — PowerShell
+
+```powershell
+$env:CI="true"; postman app test --command "npx playwright test"
+```
+
+#### macOS / Linux
 
 ```bash
-npm run start
-# → Express server at http://localhost:3000
-# → Frontend at   http://localhost:3000/login.html
+CI=true postman app test --command "npx playwright test"
 ```
+
+#### Cross-platform via npm script (recommended)
+
+`cross-env` is already installed as a dev dependency:
+
+```bash
+npm run postman:test
+```
+
+> **`CI=true` explained** — without it, results stay in your terminal only, useful while iterating locally. With it, results are pushed to Postman Application Inventory so you can track contract drift over time.
+
+---
+
+## 🧪 What You'll See
+
+In the terminal after a run:
+
+```
+✔ 1. Login       [POST] /api/auth/login   (6 passed, 0 failed)
+✔ 2. Get Products [GET] /api/products     (4 passed, 0 failed)
+✔ 4. Get Cart     [GET] /api/cart         (5 passed, 0 failed)
+
+requests captured  │ 149  (195 filtered, 64 deduplicated)
+requests matched   │ 42 matched  ★ 43 not matched
+assertions         │ 215 total  ★ 203 passed  ★ 12 failed
+```
+
+- **Playwright tests passed/failed** — UI layer
+- **API calls captured** — every real HTTP request made during the run
+- **Matched calls** — captured requests that correspond to a collection request, with `pm.test` assertion results
+- **Unmatched calls** — potential coverage gaps (endpoints your app calls but have no Postman tests yet)
+
+The same data lands in **Application Inventory** in your Postman workspace: a continuously-updated view of which APIs your application calls, which have test coverage, and which dependency contracts have drifted.
 
 ---
 
 ## 🧪 Running Tests
 
-### Playwright Tests (all 6 scenarios)
+### Playwright only (all 6 scenarios)
 
 ```bash
 npm test
@@ -193,41 +287,9 @@ npm run test:ui
 npm run test:debug
 ```
 
----
-
-## 📬 Postman Application Test
-
-Runs Playwright tests **and** validates the captured API traffic against your Postman collection in one command.
-
-### Windows — Command Prompt
-
-```cmd
-set CI=true && postman app test --command "npx playwright test"
-```
-
-### Windows — PowerShell
-
-```powershell
-$env:CI="true"; postman app test --command "npx playwright test"
-```
-
-### macOS / Linux
-
-```bash
-CI=true postman app test --command "npx playwright test"
-```
-
-### Using npm scripts (cross-platform, recommended)
-
-`cross-env` is already installed as a dev dependency:
-
-```bash
-npm run postman:test
-```
-
 ### Target a specific environment
 
-```bash
+```cmd
 # Windows CMD
 set CI=true && postman app test --command "npx playwright test" --target staging
 
@@ -238,7 +300,13 @@ $env:CI="true"; postman app test --command "npx playwright test" --target stagin
 npm run postman:test:staging
 ```
 
-### Capture only (generate collection from traffic, no validation)
+---
+
+## 📸 Capture Only (no collections yet?)
+
+The most common objection is: *"We don't have Postman collections for our APIs yet."*
+
+That's exactly what `--capture-only` is for:
 
 ```bash
 npm run postman:capture
@@ -246,7 +314,29 @@ npm run postman:capture
 postman app test --capture-only
 ```
 
-> **`CI=true` explained** — without it, results stay in your terminal only. With it, results are pushed to Postman Application Inventory so you can track contract drift over time.
+In `--capture-only` mode the CLI skips validation and instead **generates a draft Postman collection** from the traffic your UI tests produced. From there you can:
+
+1. Review the captured requests and trim the ones you don't care about
+2. Ask Postman's Agent Mode to generate `pm.test` assertions from the observed responses
+3. Save the result as a real collection and switch to `postman app test` for ongoing validation
+
+The same UI traffic that powers validation today becomes the foundation of a growing API contract suite over time — no one has to sit down and write the first hundred tests by hand.
+
+---
+
+## 🔇 Noise Controls
+
+Real apps are noisy. Fonts, analytics, hot-reload sockets, telemetry beacons — none of that should fail your build. Filter it out in `postman.config.cjs`:
+
+```javascript
+filters: {
+  urlPatterns: ['fonts.googleapis.com', 'localhost:3007', 'fonts.gstatic.com'],
+  methods: ['OPTIONS'],
+  headers: { 'x-client': 'analytics' },
+},
+```
+
+Anything matching a filter is ignored before matching, so it can't trigger an under- or over-coverage warning.
 
 ---
 
@@ -255,25 +345,15 @@ postman app test --capture-only
 ### Allure Report
 
 ```bash
-# Generate report from allure-results/
-npm run allure:generate
-
-# Open report in browser
-npm run allure:serve
+npm run allure:generate   # generate from allure-results/
+npm run allure:serve      # open in browser
 ```
 
 ### Playwright HTML Report
 
-After any test run, open:
-
-```
-playwright-report/index.html
-```
-
-Or run:
-
 ```bash
 npx playwright show-report
+# or open playwright-report/index.html directly
 ```
 
 ### Newman Collection Report
@@ -287,8 +367,8 @@ npm run postman:run
 
 ## 🔌 Backend API Reference
 
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|:---:|-------------|
+| Method | Endpoint | Auth | Description |
+|--------|----------|:----:|-------------|
 | `POST` | `/api/auth/login` | ❌ | Authenticate user, returns JWT token |
 | `GET` | `/api/products` | ✅ | List all products |
 | `POST` | `/api/cart` | ✅ | Add product to cart |
@@ -355,7 +435,7 @@ The GitHub Actions workflow at `.github/workflows/ci.yml`:
 1. Checks out code
 2. Sets up Node.js 20
 3. Installs dependencies and Playwright browsers
-4. Runs all Playwright tests (backend auto-starts via global-setup)
+4. Runs all Playwright tests (backend auto-starts via `global-setup.ts`)
 5. Generates Allure report
 6. Uploads test artifacts (videos, traces, screenshots)
 7. Runs Newman collection validation
@@ -368,7 +448,7 @@ The GitHub Actions workflow at `.github/workflows/ci.yml`:
 
 **Cause:** `page.evaluate(() => localStorage.clear())` was called before any navigation, leaving the browser context on `about:blank` where Chromium blocks storage access.
 
-**Fix in `pages/LoginPage.ts`:** Navigate to the page first, then clear `localStorage` within the correct origin.
+**Fix in `pages/LoginPage.ts`:** Navigate first, then clear `localStorage` within the correct origin.
 
 ```typescript
 async navigate(): Promise<void> {
@@ -382,7 +462,7 @@ async navigate(): Promise<void> {
 
 ### JWT bleeding across tests (shared browser context)
 
-**Cause:** `workers: 1` reuses the same browser context across tests. A successful login writes a JWT to `localStorage` that persists into the next test.
+**Cause:** `workers: 1` reuses the same browser context. A successful login writes a JWT to `localStorage` that persists into the next test.
 
 **Fix in `playwright.config.ts`:** Added `storageState: { cookies: [], origins: [] }` to the `use` block so every test starts with a clean slate.
 
@@ -390,18 +470,7 @@ async navigate(): Promise<void> {
 
 **Cause:** `VAR=value command` syntax is bash-only and not recognised by Windows Command Prompt or PowerShell.
 
-**Fix:** Use the platform-correct syntax:
-
-```cmd
-# CMD
-set CI=true && postman app test --command "npx playwright test"
-
-# PowerShell
-$env:CI="true"; postman app test --command "npx playwright test"
-
-# Cross-platform (npm script using cross-env)
-npm run postman:test
-```
+**Fix:** Use the platform-correct syntax shown in [Step 5](#step-5--run-it), or use `npm run postman:test` which uses `cross-env` under the hood.
 
 ---
 
@@ -417,3 +486,14 @@ npm run postman:test
 | `utils/schemaValidator.ts` | AJV validates every API response inline during tests |
 | `utils/fakerData.ts` | Generates realistic customer/product data per test run |
 | `utils/reportHelper.ts` | Attaches API captures and screenshots to Allure steps |
+
+---
+
+## 📚 Resources
+
+- [Validate APIs During Your Playwright Tests with Postman](https://blog.postman.com/validate-apis-during-your-playwright-tests-with-postman/) — Official Postman article this project is based on
+- [Connect your Git project to your workspace](https://learning.postman.com/docs/agent-mode/native-git#connect-your-git-project-to-your-workspace) — Postman native Git integration guide
+- [Postman CLI documentation](https://learning.postman.com/docs/postman-cli/postman-cli-overview/)
+- [Writing Postman test scripts](https://learning.postman.com/docs/writing-scripts/test-scripts/)
+- [postman-playwright on npm](https://www.npmjs.com/package/postman-playwright)
+- [Postman Agent Mode](https://learning.postman.com/docs/agent-mode/agent-mode-overview/)
