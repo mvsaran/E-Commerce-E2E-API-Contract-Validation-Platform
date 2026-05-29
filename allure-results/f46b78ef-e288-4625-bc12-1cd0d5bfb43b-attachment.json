@@ -1,0 +1,8 @@
+{
+  "method": "POST",
+  "url": "http://localhost:3000/api/auth/login",
+  "status": 401,
+  "body": {
+    "error": "Invalid credentials"
+  }
+}

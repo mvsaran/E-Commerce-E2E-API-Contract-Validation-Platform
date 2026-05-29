@@ -1,0 +1,14 @@
+{
+  "method": "POST",
+  "url": "http://localhost:3000/api/auth/login",
+  "status": 200,
+  "body": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyXzAwMSIsImVtYWlsIjoiYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODAwMzY2MDEsImV4cCI6MTc4MDEyMzAwMX0.toWXcS5KX7pTe1YJjAzgAomfvpGj4YMyJ-V9vfuzomY",
+    "user": {
+      "id": "user_001",
+      "email": "admin@test.com",
+      "name": "Admin User",
+      "role": "admin"
+    }
+  }
+}

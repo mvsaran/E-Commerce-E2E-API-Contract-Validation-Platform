@@ -1,0 +1,54 @@
+{
+  "method": "GET",
+  "url": "http://localhost:3000/api/orders",
+  "status": 200,
+  "body": {
+    "orders": [
+      {
+        "orderId": "ORD-B57852CF",
+        "userId": "user_001",
+        "status": "confirmed",
+        "items": [
+          {
+            "productId": "prod_001",
+            "name": "MacBook Pro 14",
+            "price": 1999.99,
+            "quantity": 1
+          }
+        ],
+        "total": 2159.99,
+        "customer": {
+          "firstName": "Marjorie",
+          "lastName": "Cremin",
+          "address": "7668 Lyric Hills",
+          "city": "Kuphalshire",
+          "phone": "(255) 932-8724 x77467"
+        },
+        "createdAt": "2026-05-29T06:36:33.136Z"
+      },
+      {
+        "orderId": "ORD-3DA259F4",
+        "userId": "user_001",
+        "status": "confirmed",
+        "items": [
+          {
+            "productId": "prod_001",
+            "name": "MacBook Pro 14",
+            "price": 1999.99,
+            "quantity": 1
+          }
+        ],
+        "total": 2159.99,
+        "customer": {
+          "firstName": "Monique",
+          "lastName": "Strosin",
+          "address": "104 Wilfrid Valley",
+          "city": "Fort Edwinport",
+          "phone": "(643) 385-1322"
+        },
+        "createdAt": "2026-05-29T06:36:53.215Z"
+      }
+    ],
+    "count": 2
+  }
+}

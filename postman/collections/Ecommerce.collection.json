@@ -1,0 +1,444 @@
+{
+  "info": {
+    "_postman_id": "ecommerce-playwright-postman-v1",
+    "name": "Ecommerce E2E + API Contract Validation",
+    "description": "Complete Postman collection for the E-Commerce platform.\n\nContains 6 requests covering the full user flow:\n  1. Login (POST /api/auth/login)\n  2. Get Products (GET /api/products)\n  3. Add to Cart (POST /api/cart)\n  4. Get Cart (GET /api/cart)\n  5. Checkout (POST /api/checkout)\n  6. Get Orders (GET /api/orders)\n\nEach request includes:\n  - Status validation\n  - Response body assertions\n  - AJV-style schema validation via Postman sandbox\n  - Variable extraction for chaining requests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:3000", "type": "string" },
+    { "key": "authToken",  "value": "",                     "type": "string" },
+    { "key": "cartItemId", "value": "",                     "type": "string" },
+    { "key": "orderId",    "value": "",                     "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "description": "Authenticate as admin user.\nCaptures JWT token and stores it as environment variable for subsequent requests."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 200 OK', () => {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// ── Response Time ────────────────────────────────────────────",
+              "pm.test('Response time < 2000ms', () => {",
+              "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Response has token field', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('token');",
+              "  pm.expect(json.token).to.be.a('string');",
+              "  pm.expect(json.token.length).to.be.greaterThan(10);",
+              "});",
+              "",
+              "pm.test('Response has user object', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('user');",
+              "  pm.expect(json.user).to.have.property('id');",
+              "  pm.expect(json.user).to.have.property('email');",
+              "  pm.expect(json.user).to.have.property('name');",
+              "  pm.expect(json.user).to.have.property('role');",
+              "});",
+              "",
+              "pm.test('User email matches login credentials', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.user.email).to.equal('admin@test.com');",
+              "});",
+              "",
+              "// ── Schema Validation (AJV-style) ─────────────────────────────",
+              "pm.test('Response matches Login schema', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.be.an('object');",
+              "  pm.expect(json.token).to.be.a('string');",
+              "  pm.expect(json.user.role).to.be.oneOf(['admin', 'user', 'guest']);",
+              "});",
+              "",
+              "// ── Variable Extraction ───────────────────────────────────────",
+              "const json = pm.response.json();",
+              "if (json.token) {",
+              "  pm.environment.set('authToken', json.token);",
+              "  pm.collectionVariables.set('authToken', json.token);",
+              "  console.log('✅ authToken stored:', json.token.substring(0, 20) + '...');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Get Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        },
+        "description": "Fetch the complete product catalogue.\nRequires auth token from the Login request."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 200 OK', () => {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Response has products array', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('products');",
+              "  pm.expect(json.products).to.be.an('array');",
+              "  pm.expect(json.products.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Response has total count', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('total');",
+              "  pm.expect(json.total).to.be.a('number');",
+              "  pm.expect(json.total).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// ── Schema Validation ──────────────────────────────────────────",
+              "pm.test('Each product has required fields', () => {",
+              "  const json = pm.response.json();",
+              "  json.products.forEach((product, i) => {",
+              "    pm.expect(product, `products[${i}]`).to.have.property('id');",
+              "    pm.expect(product, `products[${i}]`).to.have.property('name');",
+              "    pm.expect(product, `products[${i}]`).to.have.property('price');",
+              "    pm.expect(product, `products[${i}]`).to.have.property('stock');",
+              "    pm.expect(product, `products[${i}]`).to.have.property('category');",
+              "    pm.expect(product.price, `products[${i}].price`).to.be.a('number').and.greaterThan(0);",
+              "    pm.expect(product.stock, `products[${i}].stock`).to.be.a('number').and.greaterThanOrEqual(0);",
+              "  });",
+              "});",
+              "",
+              "// ── Extract first product ID ──────────────────────────────────",
+              "const json = pm.response.json();",
+              "if (json.products && json.products.length > 0) {",
+              "  pm.collectionVariables.set('firstProductId',   json.products[0].id);",
+              "  pm.collectionVariables.set('firstProductName', json.products[0].name);",
+              "  pm.collectionVariables.set('firstProductPrice', json.products[0].price);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Add to Cart",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"prod_001\",\n  \"name\": \"MacBook Pro 14\\\" M3\",\n  \"price\": 1999.99,\n  \"quantity\": 1,\n  \"category\": \"electronics\"\n}"
+        },
+        "description": "Add a product to the shopping cart.\nReturns the created cart item with a unique ID."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 201 Created', () => {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Cart item has required fields', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('id');",
+              "  pm.expect(json).to.have.property('productId');",
+              "  pm.expect(json).to.have.property('name');",
+              "  pm.expect(json).to.have.property('price');",
+              "  pm.expect(json).to.have.property('quantity');",
+              "  pm.expect(json).to.have.property('addedAt');",
+              "});",
+              "",
+              "pm.test('Cart item id is a non-empty string', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.id).to.be.a('string').and.have.length.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Cart item quantity is at least 1', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.quantity).to.be.a('number').and.greaterThanOrEqual(1);",
+              "});",
+              "",
+              "// ── Schema Validation ──────────────────────────────────────────",
+              "pm.test('Cart item matches schema', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.id).to.be.a('string');",
+              "  pm.expect(json.productId).to.be.a('string');",
+              "  pm.expect(json.name).to.be.a('string');",
+              "  pm.expect(json.price).to.be.a('number').and.greaterThan(0);",
+              "  pm.expect(json.quantity).to.be.a('number');",
+              "  pm.expect(json.addedAt).to.be.a('string');",
+              "});",
+              "",
+              "// ── Extract cart item ID ──────────────────────────────────────",
+              "const json = pm.response.json();",
+              "if (json.id) {",
+              "  pm.environment.set('cartItemId', json.id);",
+              "  pm.collectionVariables.set('cartItemId', json.id);",
+              "  console.log('✅ cartItemId stored:', json.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Get Cart",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/cart",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "cart"]
+        },
+        "description": "Retrieve the current cart contents for the authenticated user."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 200 OK', () => {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Response has items array', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('items');",
+              "  pm.expect(json.items).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('Response has total field', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('total');",
+              "  pm.expect(json.total).to.be.a('number').and.greaterThanOrEqual(0);",
+              "});",
+              "",
+              "pm.test('Response has itemCount field', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('itemCount');",
+              "  pm.expect(json.itemCount).to.be.a('number').and.greaterThanOrEqual(0);",
+              "});",
+              "",
+              "// ── Schema Validation ──────────────────────────────────────────",
+              "pm.test('Cart response matches schema', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.items).to.be.an('array');",
+              "  pm.expect(json.total).to.be.a('number');",
+              "  pm.expect(json.itemCount).to.be.a('number');",
+              "  json.items.forEach((item, i) => {",
+              "    pm.expect(item, `items[${i}]`).to.have.all.keys(['id','productId','name','price','quantity','category','addedAt']);",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Checkout",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type",  "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/checkout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "checkout"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"address\": \"123 Main Street\",\n    \"city\": \"New York\",\n    \"phone\": \"+1-555-0100\"\n  }\n}"
+        },
+        "description": "Place an order from the current cart contents.\nReturns the created order with orderId, status, items, total, and customer details."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 201 Created', () => {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Order has orderId', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('orderId');",
+              "  pm.expect(json.orderId).to.be.a('string').and.have.length.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Order status is confirmed', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.status).to.equal('confirmed');",
+              "});",
+              "",
+              "pm.test('Order has items array with at least 1 item', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.items).to.be.an('array');",
+              "  pm.expect(json.items.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Order total is positive', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.total).to.be.a('number').and.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Order has customer details', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.customer).to.have.property('firstName');",
+              "  pm.expect(json.customer).to.have.property('lastName');",
+              "});",
+              "",
+              "// ── Schema Validation ──────────────────────────────────────────",
+              "pm.test('Checkout response matches schema', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.orderId).to.be.a('string');",
+              "  pm.expect(json.status).to.be.oneOf(['confirmed','pending','shipped','delivered','cancelled']);",
+              "  pm.expect(json.items).to.be.an('array');",
+              "  pm.expect(json.total).to.be.a('number');",
+              "  pm.expect(json.customer).to.be.an('object');",
+              "  pm.expect(json.createdAt).to.be.a('string');",
+              "});",
+              "",
+              "// ── Extract order ID ──────────────────────────────────────────",
+              "const json = pm.response.json();",
+              "if (json.orderId) {",
+              "  pm.environment.set('orderId', json.orderId);",
+              "  pm.collectionVariables.set('orderId', json.orderId);",
+              "  console.log('✅ orderId stored:', json.orderId);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Get Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Retrieve all orders for the authenticated user.\nReturns an array of order objects with items, totals, and customer details."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// ── Status Validation ────────────────────────────────────────",
+              "pm.test('Status is 200 OK', () => {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// ── Response Body Assertions ──────────────────────────────────",
+              "pm.test('Response has orders array', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('orders');",
+              "  pm.expect(json.orders).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('Response has count field', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('count');",
+              "  pm.expect(json.count).to.be.a('number').and.greaterThanOrEqual(0);",
+              "});",
+              "",
+              "pm.test('Count matches orders array length', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.count).to.equal(json.orders.length);",
+              "});",
+              "",
+              "// ── Schema Validation ──────────────────────────────────────────",
+              "pm.test('Orders response matches schema', () => {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.orders).to.be.an('array');",
+              "  pm.expect(json.count).to.be.a('number');",
+              "  json.orders.forEach((order, i) => {",
+              "    pm.expect(order, `orders[${i}]`).to.have.property('orderId');",
+              "    pm.expect(order, `orders[${i}]`).to.have.property('status');",
+              "    pm.expect(order, `orders[${i}]`).to.have.property('items');",
+              "    pm.expect(order, `orders[${i}]`).to.have.property('total');",
+              "    pm.expect(order.status, `orders[${i}].status`).to.be.oneOf(['confirmed','pending','shipped','delivered','cancelled']);",
+              "  });",
+              "});",
+              "",
+              "// ── Verify stored order ID appears in results ─────────────────",
+              "const storedOrderId = pm.collectionVariables.get('orderId');",
+              "if (storedOrderId) {",
+              "  pm.test('Previously placed order appears in orders list', () => {",
+              "    const json = pm.response.json();",
+              "    const found = json.orders.some(o => o.orderId === storedOrderId);",
+              "    pm.expect(found, `Order ${storedOrderId} should be in list`).to.be.true;",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

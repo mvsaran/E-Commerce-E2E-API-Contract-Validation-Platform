@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sign in to ShopSphere — your premium e-commerce platform" />
+  <title>Login — ShopSphere</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <main class="login-page" role="main">
+    <div class="login-container">
+
+      <!-- Logo / Branding -->
+      <div class="login-logo">
+        <div class="logo-icon" aria-hidden="true">🛍</div>
+        <h1>ShopSphere</h1>
+        <p>Premium E-Commerce Platform</p>
+      </div>
+
+      <!-- Login Card -->
+      <div class="glass-card login-card" role="region" aria-label="Login form">
+        <div class="card-body">
+          <h2 style="font-size:1.25rem; margin-bottom:0.25rem;">Welcome back</h2>
+          <p style="font-size:0.875rem; color:var(--color-text-muted); margin-bottom:1.5rem;">
+            Sign in to your account to continue
+          </p>
+
+          <!-- Error / Success alerts -->
+          <div id="alert-container" role="alert" aria-live="polite"></div>
+
+          <!-- Login Form -->
+          <form id="login-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="email">Email address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="form-input"
+                placeholder="admin@test.com"
+                autocomplete="email"
+                required
+                aria-required="true"
+                data-testid="email-input"
+              />
+              <div class="form-error hidden" id="email-error">Please enter a valid email</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                class="form-input"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+                aria-required="true"
+                data-testid="password-input"
+              />
+              <div class="form-error hidden" id="password-error">Password is required</div>
+            </div>
+
+            <!-- Global error message (shown on wrong credentials) -->
+            <div id="login-error" class="alert alert-danger hidden" role="alert">
+              <span>✕</span>
+              <span id="error-text">Invalid credentials</span>
+            </div>
+
+            <button
+              id="login-btn"
+              type="submit"
+              class="btn btn-primary btn-lg btn-full"
+              data-testid="login-button"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <div class="login-divider">or</div>
+
+          <!-- Demo credentials hint -->
+          <div class="login-hint" id="demo-credentials">
+            <p style="font-weight:600; color:var(--color-text-secondary); margin-bottom:0.5rem;">
+              Demo Credentials
+            </p>
+            <p><strong>Email:</strong> <code>admin@test.com</code></p>
+            <p><strong>Password:</strong> <code>password123</code></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

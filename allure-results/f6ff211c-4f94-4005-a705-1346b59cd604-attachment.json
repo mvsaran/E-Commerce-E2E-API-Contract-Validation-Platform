@@ -1,0 +1,20 @@
+{
+  "method": "GET",
+  "url": "http://localhost:3000/api/cart",
+  "status": 200,
+  "body": {
+    "items": [
+      {
+        "id": "013fdbd2-c066-40a3-89d9-59d47764281f",
+        "productId": "prod_001",
+        "name": "MacBook Pro 14",
+        "price": 1999.99,
+        "quantity": 1,
+        "category": "electronics",
+        "addedAt": "2026-05-29T06:36:23.068Z"
+      }
+    ],
+    "total": 1999.99,
+    "itemCount": 1
+  }
+}

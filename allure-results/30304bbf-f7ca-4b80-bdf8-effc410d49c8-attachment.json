@@ -1,0 +1,9 @@
+{
+  "method": "DELETE",
+  "url": "http://localhost:3000/api/cart/c3bd004f-4cf7-407e-aa1f-e63f56a3fa8a",
+  "status": 200,
+  "body": {
+    "message": "Item removed from cart",
+    "id": "c3bd004f-4cf7-407e-aa1f-e63f56a3fa8a"
+  }
+}

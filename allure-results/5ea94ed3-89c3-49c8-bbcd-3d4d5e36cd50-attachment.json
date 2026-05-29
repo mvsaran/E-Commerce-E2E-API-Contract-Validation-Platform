@@ -1,0 +1,72 @@
+{
+  "method": "GET",
+  "url": "http://localhost:3000/api/products",
+  "status": 200,
+  "body": {
+    "products": [
+      {
+        "id": "prod_001",
+        "name": "MacBook Pro 14\" M3",
+        "category": "electronics",
+        "price": 1999.99,
+        "image": "💻",
+        "stock": 12,
+        "description": "Apple M3 chip, 18GB RAM, 512GB SSD — professional-grade laptop",
+        "rating": 4.9
+      },
+      {
+        "id": "prod_002",
+        "name": "Sony WH-1000XM5 Headphones",
+        "category": "audio",
+        "price": 349.99,
+        "image": "🎧",
+        "stock": 28,
+        "description": "Industry-leading noise cancellation with 30hr battery life",
+        "rating": 4.8
+      },
+      {
+        "id": "prod_003",
+        "name": "iPhone 15 Pro Max",
+        "category": "mobile",
+        "price": 1199.99,
+        "image": "📱",
+        "stock": 8,
+        "description": "Titanium design, A17 Pro chip, 4K120fps ProRes video",
+        "rating": 4.7
+      },
+      {
+        "id": "prod_004",
+        "name": "Keychron K2 Mechanical Keyboard",
+        "category": "accessories",
+        "price": 89.99,
+        "image": "⌨️",
+        "stock": 45,
+        "description": "Wireless/Wired compact keyboard with RGB backlight and hot-swap switches",
+        "rating": 4.6
+      },
+      {
+        "id": "prod_005",
+        "name": "LG 27\" 4K OLED Monitor",
+        "category": "display",
+        "price": 749.99,
+        "image": "🖥️",
+        "stock": 3,
+        "description": "27-inch UHD OLED, 240Hz, 0.03ms response, USB-C 90W charging",
+        "rating": 4.8
+      },
+      {
+        "id": "prod_006",
+        "name": "Apple Watch Ultra 2",
+        "category": "wearable",
+        "price": 799.99,
+        "image": "⌚",
+        "stock": 15,
+        "description": "Titanium case, 60hr battery, GPS + Cellular, depth-rated to 100m",
+        "rating": 4.7
+      }
+    ],
+    "total": 6,
+    "page": 1,
+    "limit": 6
+  }
+}

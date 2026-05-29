@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Browse our premium product catalogue on ShopSphere" />
+  <title>Products — ShopSphere</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="page-wrapper">
+
+  <!-- Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container navbar-inner">
+      <a href="/products.html" class="navbar-brand" aria-label="ShopSphere home">
+        <div class="brand-icon" aria-hidden="true">🛍</div>
+        ShopSphere
+      </a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="/products.html" class="active" id="nav-products" aria-current="page">🏪 Products</a></li>
+        <li>
+          <a href="/cart.html" id="nav-cart">
+            🛒 Cart
+            <span class="cart-badge cart-count" id="cart-count" style="display:none">0</span>
+          </a>
+        </li>
+        <li><a href="/order-confirmation.html" id="nav-orders">📦 Orders</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <span id="user-display" style="font-size:0.8rem;color:var(--color-text-muted)"></span>
+        <button class="btn btn-secondary btn-sm" id="logout-btn" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" id="main-content" role="main">
+    <div class="container">
+
+      <!-- Page Header -->
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Product Catalogue</h1>
+          <p id="product-count" style="font-size:0.875rem;color:var(--color-text-muted);margin:0"></p>
+        </div>
+        <div class="d-flex align-center gap-sm">
+          <span id="loading-indicator" class="spinner hidden" aria-label="Loading products"></span>
+        </div>
+      </div>
+
+      <!-- Alert area -->
+      <div id="alert-container" role="alert" aria-live="polite"></div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-grid" role="list" aria-label="Available products">
+        <!-- Products rendered dynamically by products.js -->
+
+        <!-- Skeleton loaders shown while loading -->
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+        <div class="glass-card skeleton-card skeleton" aria-hidden="true"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Floating Cart Button -->
+  <div class="cart-indicator" id="cart-indicator" style="display:none">
+    <a href="/cart.html" class="cart-floating-btn" id="view-cart-btn" aria-label="View cart">
+      🛒 View Cart
+      <span class="cart-badge cart-count" id="cart-count-float">0</span>
+    </a>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/products.js"></script>
+</body>
+</html>

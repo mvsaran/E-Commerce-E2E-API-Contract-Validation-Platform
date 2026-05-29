@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Complete your order on ShopSphere" />
+  <title>Checkout — ShopSphere</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="page-wrapper">
+
+  <!-- Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container navbar-inner">
+      <a href="/products.html" class="navbar-brand" aria-label="ShopSphere home">
+        <div class="brand-icon" aria-hidden="true">🛍</div>
+        ShopSphere
+      </a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="/products.html" id="nav-products">🏪 Products</a></li>
+        <li><a href="/cart.html" id="nav-cart">🛒 Cart</a></li>
+        <li><a href="/order-confirmation.html" id="nav-orders">📦 Orders</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <div class="container">
+
+      <!-- Page Header -->
+      <div class="section-header">
+        <h1 class="section-title">Checkout</h1>
+      </div>
+
+      <!-- Checkout Steps indicator -->
+      <ol class="checkout-steps" aria-label="Checkout progress">
+        <li>
+          <span class="step-num done" aria-label="Step 1 complete">✓</span>
+          <span class="step-label">Cart</span>
+        </li>
+        <li>
+          <span class="step-num active" aria-current="step">2</span>
+          <span class="step-label active">Details</span>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <span class="step-label">Confirm</span>
+        </li>
+      </ol>
+
+      <!-- Alert area -->
+      <div id="alert-container" role="alert" aria-live="polite"></div>
+
+      <!-- Checkout Layout -->
+      <div class="checkout-layout">
+
+        <!-- Customer Details Form -->
+        <div class="glass-card" role="region" aria-label="Customer details">
+          <div class="card-header">
+            <h2 style="font-size:1rem; font-weight:600;">📋 Delivery Details</h2>
+          </div>
+          <div class="card-body">
+            <form id="checkout-form" novalidate>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="first-name">First Name *</label>
+                  <input
+                    id="first-name"
+                    name="firstName"
+                    type="text"
+                    class="form-input"
+                    placeholder="John"
+                    required
+                    autocomplete="given-name"
+                    data-testid="first-name-input"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="last-name">Last Name *</label>
+                  <input
+                    id="last-name"
+                    name="lastName"
+                    type="text"
+                    class="form-input"
+                    placeholder="Doe"
+                    required
+                    autocomplete="family-name"
+                    data-testid="last-name-input"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="address">Street Address *</label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  class="form-input"
+                  placeholder="123 Main Street"
+                  required
+                  autocomplete="street-address"
+                  data-testid="address-input"
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="city">City *</label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    class="form-input"
+                    placeholder="New York"
+                    required
+                    autocomplete="address-level2"
+                    data-testid="city-input"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="phone">Phone Number *</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    class="form-input"
+                    placeholder="+1 (555) 000-0000"
+                    required
+                    autocomplete="tel"
+                    data-testid="phone-input"
+                  />
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Payment Info (UI only, no real payment) -->
+              <h3 style="font-size:0.9rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:1rem;">
+                💳 Payment (Demo Mode)
+              </h3>
+              <div class="form-group">
+                <label class="form-label" for="card-number">Card Number</label>
+                <input
+                  id="card-number"
+                  type="text"
+                  class="form-input"
+                  value="4242 4242 4242 4242"
+                  readonly
+                  style="opacity:0.6;cursor:not-allowed"
+                  aria-label="Demo card number"
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="card-expiry">Expiry</label>
+                  <input id="card-expiry" type="text" class="form-input" value="12/28" readonly style="opacity:0.6" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="card-cvv">CVV</label>
+                  <input id="card-cvv" type="text" class="form-input" value="***" readonly style="opacity:0.6" />
+                </div>
+              </div>
+
+              <button
+                id="place-order-btn"
+                type="submit"
+                class="btn btn-primary btn-lg btn-full"
+                data-testid="place-order-btn"
+              >
+                🛍 Place Order
+              </button>
+
+              <p style="font-size:0.75rem;text-align:center;color:var(--color-text-muted);margin-top:0.75rem;">
+                🔒 Secure demo checkout — no real payment processed
+              </p>
+            </form>
+          </div>
+        </div>
+
+        <!-- Order Review -->
+        <div class="glass-card" role="region" aria-label="Order review">
+          <div class="card-header">
+            <h2 style="font-size:1rem; font-weight:600;">🧾 Order Review</h2>
+          </div>
+          <div class="card-body" id="order-review">
+            <div class="text-center" style="padding:2rem">
+              <span class="spinner" aria-label="Loading order review"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>

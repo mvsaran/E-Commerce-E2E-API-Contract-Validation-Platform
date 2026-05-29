@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Order confirmed — thank you for shopping at ShopSphere" />
+  <title>Order Confirmation — ShopSphere</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="page-wrapper">
+
+  <!-- Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container navbar-inner">
+      <a href="/products.html" class="navbar-brand" aria-label="ShopSphere home">
+        <div class="brand-icon" aria-hidden="true">🛍</div>
+        ShopSphere
+      </a>
+      <ul class="navbar-nav" role="list">
+        <li><a href="/products.html" id="nav-products">🏪 Products</a></li>
+        <li><a href="/cart.html" id="nav-cart">🛒 Cart</a></li>
+        <li><a href="/order-confirmation.html" id="nav-orders" class="active" aria-current="page">📦 Orders</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <div class="container" style="max-width:720px; margin:0 auto;">
+
+      <!-- Page Header -->
+      <div class="section-header">
+        <h1 class="section-title">📦 Order History</h1>
+        <span id="order-count-label" style="font-size:0.875rem;color:var(--color-text-muted)"></span>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-state" class="text-center" style="padding:3rem 0">
+        <span class="spinner" aria-label="Loading orders"></span>
+        <p class="mt-md text-muted">Fetching your orders…</p>
+      </div>
+
+      <!-- Success banner for newly placed order -->
+      <div id="new-order-banner" class="glass-card hidden" role="region" aria-label="Order placed confirmation">
+        <div class="card-body order-success">
+          <div class="order-success-icon" aria-hidden="true">🎉</div>
+          <h2 style="font-size:1.5rem; margin-bottom:0.5rem;">Order Placed Successfully!</h2>
+          <p class="text-muted" style="font-size:0.9rem;">Thank you for your purchase</p>
+          <div class="order-id-display" id="latest-order-id" aria-label="Order ID"></div>
+        </div>
+      </div>
+
+      <!-- Orders List -->
+      <div id="orders-container" class="hidden" role="region" aria-label="Order list">
+        <!-- Rendered by order-confirmation.js -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-orders" class="glass-card hidden" role="region" aria-label="No orders">
+        <div class="card-body order-success">
+          <div class="order-success-icon" style="background:var(--color-bg-card)">📭</div>
+          <h2 style="font-size:1.25rem; margin-bottom:0.5rem;">No Orders Yet</h2>
+          <p class="text-muted">You haven't placed any orders. Start shopping!</p>
+          <a href="/products.html" class="btn btn-primary mt-md">Browse Products</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/order-confirmation.js"></script>
+</body>
+</html>
